@@ -1,0 +1,505 @@
+{
+  "info": {
+    "_postman_id": "8c5b967d-944a-4632-a5be-9bc0d26859bd",
+    "name": "UrbanFlow - Servicio de Pagos MVP",
+    "description": "Colección de endpoints para probar manualmente el flujo del servicio de pagos simulación/MVP.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System Health & Config",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Tarifas Vigentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tariffs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tariffs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Tarifa por Modo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tariffs/bus",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tariffs",
+                "bus"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Billeteras (Wallets)",
+      "item": [
+        {
+          "name": "Crear Billetera",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.wallet) {",
+                  "    pm.environment.set(\"wallet_id\", response.wallet.id);",
+                  "    pm.environment.set(\"user_id\", response.wallet.user_id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"550e8400-e29b-41d4-a716-446655440001\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Billetera de Usuario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallets/{{user_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "{{user_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Recargar Saldo (Simulado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 25000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallets/{{user_id}}/topup",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "wallets",
+                "{{user_id}}",
+                "topup"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Métodos de Pago",
+      "item": [
+        {
+          "name": "Registrar Tarjeta NFC / QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.payment_method) {",
+                  "    pm.environment.set(\"payment_method_id\", response.payment_method.id);",
+                  "    pm.environment.set(\"payment_token\", response.payment_method.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"wallet_id\": \"{{wallet_id}}\",\n  \"method_type\": \"nfc_card\",\n  \"label\": \"Mi tarjeta NFC prepago\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment-methods",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment-methods"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Métodos de Billetera",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/payment-methods/{{wallet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment-methods",
+                "{{wallet_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Validar Token de Pago (Simular Tap NFC)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{payment_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/payment-methods/validate-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "payment-methods",
+                "validate-token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Viajes (Trips)",
+      "item": [
+        {
+          "name": "Iniciar Viaje Multimodal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.trip) {",
+                  "    pm.environment.set(\"trip_id\", response.trip.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"payment_method_id\": \"{{payment_method_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/trips/start",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "trips",
+                "start"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar Segmento de Autobús",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transport_mode\": \"bus\",\n  \"origin_stop\": \"Calle 72\",\n  \"destination_stop\": \"Calle 100\",\n  \"distance_km\": 5.2,\n  \"duration_minutes\": 15\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/trips/{{trip_id}}/add-segment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "trips",
+                "{{trip_id}}",
+                "add-segment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Agregar Segmento de Metro (Transbordo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"transport_mode\": \"metro\",\n  \"origin_stop\": \"Estación Calle 100\",\n  \"destination_stop\": \"Estación Portal Norte\",\n  \"distance_km\": 10.0,\n  \"duration_minutes\": 20\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/trips/{{trip_id}}/add-segment",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "trips",
+                "{{trip_id}}",
+                "add-segment"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Completar Viaje y Cobrar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/trips/{{trip_id}}/complete",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "trips",
+                "{{trip_id}}",
+                "complete"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ver Detalle de Viaje",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/trips/{{trip_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "trips",
+                "{{trip_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Transacciones",
+      "item": [
+        {
+          "name": "Historial de Transacciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/transactions/{{wallet_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{wallet_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resumen de Gastos del Periodo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/transactions/{{wallet_id}}/summary?days=30",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "transactions",
+                "{{wallet_id}}",
+                "summary"
+              ],
+              "query": [
+                {
+                  "key": "days",
+                  "value": "30"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Auditoría de Tarifas",
+      "item": [
+        {
+          "name": "Actualizar Tarifa (Con Auditoría)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"base_fare\": 2500,\n  \"changed_by\": \"Postman Administrator\",\n  \"reason\": \"Ajuste tarifario anual de buses\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/tariffs/bus",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tariffs",
+                "bus"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Consultar Audit Log Regulatorio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/tariffs/audit-log",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "tariffs",
+                "audit-log"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
