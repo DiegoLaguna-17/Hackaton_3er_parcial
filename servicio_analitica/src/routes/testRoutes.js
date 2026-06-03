@@ -3,7 +3,7 @@ const { testApi, testDb } = require('../controllers/testController');
 
 const router = express.Router();
 
-router.get('/test', testApi);
-router.get('/test-db', testDb);
+router.get('/analitica', testApi);
+router.get('/analitica/db', testDb);
 
 module.exports = router;
