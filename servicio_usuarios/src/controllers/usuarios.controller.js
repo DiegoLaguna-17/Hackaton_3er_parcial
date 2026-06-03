@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const  supabase  = require('../config/supabaseClient');
+const {sendMessage}=require('../kafka/producer')
 
 const crearUsuarioBase = async ({ correo, contrasena, rolNombre, nombre, telefono }) => {
   const { data: rolData, error: rolError } = await supabase
@@ -49,7 +50,14 @@ const registrarUsuario = async (req, res) => {
       nombre,
       telefono
     });
-
+    sendMessage('usuarios-events', {
+        type: 'USUARIO_CREADO',
+        data: {
+            id: user.id,
+            correo: user.correo,
+            nombre: user.nombre
+        }
+    });
     res.json({ success: true, user });
 
   } catch (error) {
@@ -83,7 +91,14 @@ const registrarConductor = async (req, res) => {
       }]);
 
     if (conductorError) throw new Error(conductorError.message);
-
+    sendMessage('usuarios-events', {
+        type: 'CONDUCTOR_CREADO',
+        data: {
+            userId: user.id,
+            licencia,
+            vehiculo
+        }
+    });
     res.json({ success: true, user });
 
   } catch (error) {
@@ -102,7 +117,13 @@ const registrarAdministrador = async (req, res) => {
       rolNombre: 'admin',
       nombre
     });
-
+    sendMessage('usuarios-events', {
+        type: 'ADMIN_CREADO',
+        data: {
+            id: user.id,
+            correo: user.correo
+        }
+    });
     res.json({ success: true, user });
 
   } catch (error) {
@@ -119,7 +140,7 @@ const listarUsuarios = async (req, res) => {
         correo,
         nombre,
         telefono,
-        roles(nombre)
+        roles!inner(nombre)
       `)
       .eq('roles.nombre', 'usuario');
 
@@ -133,7 +154,6 @@ const listarUsuarios = async (req, res) => {
 };
 
 
-// 🚗 LISTAR CONDUCTORES
 const listarConductores = async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -152,7 +172,12 @@ const listarConductores = async (req, res) => {
       .eq('roles.nombre', 'conductor');
 
     if (error) throw new Error(error.message);
-
+    sendMessage('usuarios-events', {
+    type: 'LOGIN',
+    data: {
+        userId: user.id
+    }
+    });
     res.json({ success: true, data });
 
   } catch (error) {
@@ -161,7 +186,6 @@ const listarConductores = async (req, res) => {
 };
 
 
-// 🛠 LISTAR ADMINISTRADORES
 const listarAdministradores = async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -192,7 +216,6 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'Correo y contraseña requeridos' });
     }
 
-    // 🔍 buscar usuario con rol
     const { data: user, error } = await supabase
       .from('usuarios')
       .select(`
@@ -209,14 +232,19 @@ const login = async (req, res) => {
       return res.status(400).json({ error: 'Usuario no existe' });
     }
 
-    // 🔐 validar contraseña
     const valid = await bcrypt.compare(contrasena, user.contrasena);
 
     if (!valid) {
       return res.status(400).json({ error: 'Contraseña incorrecta' });
     }
 
-    // 🎯 respuesta limpia para frontend
+    sendMessage('usuarios-events', {
+        type: 'LOGIN',
+        data: {
+            userId: user.id
+        }
+    });
+    
     res.json({
       success: true,
       user: {

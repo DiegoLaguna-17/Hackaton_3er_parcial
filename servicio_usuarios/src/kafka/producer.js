@@ -24,6 +24,7 @@ const sendMessage = async (topic, message) => {
         { value: JSON.stringify(message) }
       ],
     });
+    console.log('Kafka enviado:', topic, message);
   } catch (error) {
     console.error(`[Kafka] Error sending message to ${topic}:`, error);
   }
