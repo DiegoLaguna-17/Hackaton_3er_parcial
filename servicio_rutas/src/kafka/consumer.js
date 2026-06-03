@@ -11,7 +11,7 @@ const connectConsumer = async (topics, messageHandler) => {
   try {
     await consumer.connect();
     console.log('[Kafka] Consumer connected');
-    
+
     for (const topic of topics) {
       await consumer.subscribe({ topic, fromBeginning: true });
     }

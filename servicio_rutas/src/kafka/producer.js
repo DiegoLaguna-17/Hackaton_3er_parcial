@@ -20,9 +20,7 @@ const sendMessage = async (topic, message) => {
   try {
     await producer.send({
       topic,
-      messages: [
-        { value: JSON.stringify(message) }
-      ],
+      messages: [{ value: JSON.stringify(message) }],
     });
   } catch (error) {
     console.error(`[Kafka] Error sending message to ${topic}:`, error);

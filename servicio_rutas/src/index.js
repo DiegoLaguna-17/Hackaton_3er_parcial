@@ -1,26 +1,33 @@
 require('dotenv').config();
 const express = require('express');
-const testRoutes = require('./routes/testRoutes');
 
-const app = express();
+const testRoutes   = require('./routes/testRoutes');
+const routesRoutes = require('./routes/routesRoutes');
+const { connectProducer } = require('./kafka/producer');
+const { connectConsumer } = require('./kafka/consumer');
+const { updateVehiclePosition } = require('./store/vehicleStore');
+
+const app  = express();
 const PORT = process.env.PORT || 3002;
 
 app.use(express.json());
-
-// API routes prefix handled by nginx, but internally we map /api to the routes
-// Wait, NGINX: /usuarios/api -> servicio_usuarios
-// If it strips the prefix, or if it doesn't? Let's just mount at /api
 app.use('/api', testRoutes);
+app.use('/api', routesRoutes);
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`servicio_rutas listening on port ${PORT}`);
+  console.log(`[servicio_rutas] Escuchando en puerto ${PORT}`);
 });
 
+setTimeout(async () => {
+  await connectProducer();
 
-const { connectConsumer } = require('./kafka/consumer');
-setTimeout(() => {
-  connectConsumer(['vehicle_positions'], (topic, message) => {
-    console.log(`[${topic}] received: ${message}`);
+  await connectConsumer(['posiciones_vehiculos'], (topic, rawMessage) => {
+    try {
+      const evento = JSON.parse(rawMessage);
+      console.log(`[Kafka][${topic}] Posición recibida — vehiculoId: ${evento.vehiculoId}`);
+      updateVehiclePosition(evento);
+    } catch (err) {
+      console.error('[Kafka] Error procesando mensaje:', err.message);
+    }
   });
-}, 10000); // Wait for kafka
-
+}, 10000);
